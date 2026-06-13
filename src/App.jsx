@@ -44,7 +44,7 @@ export default function App() {
 	};
 
 	// ===== PRODUCTION =====
-	const takeSample = (type) => {
+	const takeSample = async (type) => {
 		if (!lotNumber) {
 		alert("❌ QAQC must set the first lot!");
 		return;
