@@ -152,12 +152,24 @@ export default function App() {
 		window.location.reload();
 	};
 
-	const resetSystem = () => {
-		if (window.confirm("Reset all data?")) {
+	const resetSystem = async () => {
+		if (!window.confirm("Reset all data?")) {
+			return;
+		}
+
+		const { error } = await supabase
+			.from("samples")
+			.delete()
+			.neq("id", 0);
+
+		if (error) {
+			alert(`Could not reset database: ${error.message}`);
+			return;
+		}
+
 		localStorage.clear();
 		setSamples([]);
 		setLotNumber("");
-		}
 	};
 
 	// ===== LOGIC =====
