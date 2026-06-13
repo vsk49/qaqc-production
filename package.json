@@ -1,11 +1,11 @@
 {
-  "name": "my-react-app",
-  "private": true,
+  "name": "qaqc-production",
+  "private": false,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build --output dist",
     "lint": "eslint .",
     "preview": "vite preview"
   },
