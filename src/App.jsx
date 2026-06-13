@@ -54,20 +54,9 @@ export default function App() {
 
 		if (type === "NORMAL") {
 		sampleLot = lotNumber;
-		setLotNumber(prev => incrementLot(prev));
 		}
 
-		const newSample = {
-		id: Date.now(),
-		time: new Date().toLocaleString(),
-		takenBy: user.name,
-		type,
-		lot: sampleLot,
-		status: "READY"
-		};
-
-		// setSamples(prev => [...prev, newSample]);
-		await supabase.from("samples").insert([
+		const { error } = await supabase.from("samples").insert([
 			{
 				time: new Date().toLocaleString(),
 				taken_by: user.name,
@@ -76,12 +65,32 @@ export default function App() {
 				lot: sampleLot
 			}
 		]);
+
+		if (error) {
+			alert(`Could not save sample: ${error.message}`);
+			return;
+		}
+
+		if (type === "NORMAL") {
+			setLotNumber(prev => incrementLot(prev));
+		}
+
+		await fetchSamples();
 	};
 
 	// ===== FETCH =====
 	const fetchSamples = async () => {
-		const { data } = await supabase.from("samples").select("*").order("id", { ascending: false });
-		setSamples(data);
+		const { data, error } = await supabase.from("samples").select("*").order("id", { ascending: false });
+
+		if (error) {
+			alert(`Could not load samples: ${error.message}`);
+			return;
+		}
+
+		setSamples((data || []).map(sample => ({
+			...sample,
+			takenBy: sample.taken_by
+		})));
 	};
 
 	// ===== AUTO LOAD =====
@@ -105,16 +114,32 @@ export default function App() {
 		setLotInput("");
 	};
 
-	const verifySample = (id) => {
-		setSamples(prev =>
-			prev.map(s => s.id === id ? { ...s, status: "VERIFIED" } : s)
-		);
+	const verifySample = async (id) => {
+		const { error } = await supabase
+			.from("samples")
+			.update({ status: "VERIFIED" })
+			.eq("id", id);
+
+		if (error) {
+			alert(`Could not verify sample: ${error.message}`);
+			return;
+		}
+
+		await fetchSamples();
 	};
 
-	const failSample = (id) => {
-		setSamples(prev =>
-			prev.map(s => s.id === id ? { ...s, status: "FAILED" } : s)
-		);
+	const failSample = async (id) => {
+		const { error } = await supabase
+			.from("samples")
+			.update({ status: "FAILED" })
+			.eq("id", id);
+
+		if (error) {
+			alert(`Could not fail sample: ${error.message}`);
+			return;
+		}
+
+		await fetchSamples();
 	};
 
 	// ===== ADMIN =====
